@@ -1,7 +1,10 @@
+import { addDoc, collection } from 'firebase/firestore';
 import { useState } from 'react';
 import { styled } from 'styled-components';
+import { auth, db } from '../firebase';
 
-const Form = styled.div`
+const Form = styled.form`
+  //div로 해뒀어서 onSumbit 작동이 안됐었음
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -57,7 +60,7 @@ const SubmitBtn = styled.input`
 `;
 
 export default function PostTweetFrom() {
-  const { isLoading, setLoading } = useState(false);
+  const [isLoading, setLoading] = useState(false);
   const [tweet, setTweet] = useState('');
   const [file, setFile] = useState<File | null>(null); //타입스크립트 구문
   const onChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -73,8 +76,29 @@ export default function PostTweetFrom() {
     }
   };
 
+  const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    console.log(onSubmit);
+    e.preventDefault();
+    const user = auth.currentUser;
+    if (!user || isLoading || tweet === '' || tweet.length > 180) return;
+
+    try {
+      setLoading(true);
+      await addDoc(collection(db, 'tweets'), {
+        tweet,
+        createAt: Date.now(), //트윗이 생성된 시간
+        username: user.displayName || 'Anonymous', //일부 sns는 로그인해도 타인에게 보이는 이름은 제공 안하기도 해서
+        userId: user.uid,
+      }); // 처음은 어떤 컬렉션에 도큐먼트를 생성하고 싶은지
+    } catch (e) {
+      console.log(e); //유저에게 에러 보여주려고
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
-    <Form>
+    <Form onSubmit={onSubmit}>
       <TextArea
         rows={5}
         maxLength={180}
