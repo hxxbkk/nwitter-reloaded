@@ -1,7 +1,8 @@
-import { addDoc, collection } from 'firebase/firestore';
+import { addDoc, collection, updateDoc } from 'firebase/firestore';
 import { useState } from 'react';
 import { styled } from 'styled-components';
-import { auth, db } from '../firebase';
+import { auth, db, storage } from '../firebase';
+import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
 
 const Form = styled.form`
   //div로 해뒀어서 onSumbit 작동이 안됐었음
@@ -72,7 +73,18 @@ export default function PostTweetFrom() {
     const { files } = e.target;
     if (files && files.length === 1) {
       // input에서 파일 추출 파일이 딱 하나만 있는지 확인, 유저가 단 하나의 파일만 업로드하도록
-      setFile(files[0]); // 배열의 첫 번째 파일을 file state에 저장
+      //setFile(files[0]); // 배열의 첫 번째 파일을 file state에 저장
+      const file = files[0];
+      const fileSizeInBytes = file.size;
+      const fileSizeInMegabytes = fileSizeInBytes / (1024 * 1024); // 바이트를 메가바이트(MB)로 변환
+      const fileSizeInGigabytes = fileSizeInBytes / (1024 * 1024 * 1024); // 바이트를 기가바이트(GB)로 변환
+
+      if (fileSizeInMegabytes < 1 && fileSizeInGigabytes < 1) {
+        // 파일 크기가 1MB 미만 이고, 1GB 미만인 경우
+        setFile(file); // 배열의 첫 번째 파일을 file state에 저장
+      } else {
+        alert('파일은 1MB 미만, 그리고 동시에 1GB 미만 이어야 합니다.');
+      }
     }
   };
 
@@ -84,12 +96,28 @@ export default function PostTweetFrom() {
 
     try {
       setLoading(true);
-      await addDoc(collection(db, 'tweets'), {
+      const doc = await addDoc(collection(db, 'tweets'), {
+        //document에 대한 참조
         tweet,
         createAt: Date.now(), //트윗이 생성된 시간
         username: user.displayName || 'Anonymous', //일부 sns는 로그인해도 타인에게 보이는 이름은 제공 안하기도 해서
         userId: user.uid,
       }); // 처음은 어떤 컬렉션에 도큐먼트를 생성하고 싶은지
+      if (file) {
+        const locationRef = ref(
+          storage,
+          `tweets/${user.uid}-${user.displayName}/${doc.id}`
+        ); //tweets 폴더 안에 트윗을 보내는 유저들 저마다의 폴더를 하나씩 생성
+        // tweets폴더가 있고 그 안에 유저 ID - 유저 이름으로 생서됨
+        const result = await uploadBytes(locationRef, file);
+        const url = await getDownloadURL(result.ref); // 파일을 업로드하고 그 파일의 퍼블릭 URL 받기
+        await updateDoc(doc, {
+          // 전에 만든 트윗 도큐먼트에 그 url 저장
+          photo: url,
+        });
+      }
+      setTweet('');
+      setFile(null);
     } catch (e) {
       console.log(e); //유저에게 에러 보여주려고
     } finally {
@@ -100,6 +128,7 @@ export default function PostTweetFrom() {
   return (
     <Form onSubmit={onSubmit}>
       <TextArea
+        required //파일 첨부는 필수가 아니지만 트윗은 필수
         rows={5}
         maxLength={180}
         onChange={onChange}
