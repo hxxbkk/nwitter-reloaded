@@ -34,12 +34,13 @@ export default function Tweet({ username, photo, tweet }: ITweet) {
         <Username>{username}</Username>
         <Payload>{tweet}</Payload>
       </Column>
-      {photo ? (
-        <Column>
+      <Column>
+        {photo ? (
           <Photo src={photo} />
-          {/*src는 photo로 하면 되지만 사진 첨부가 필수는 아니기 때문에 photo 값이 없을 수도 있음 */}
-        </Column>
-      ) : null}
+        ) : //src는 photo로 하면 되지만 사진 첨부가 필수는 아니기 때문에 photo 값이 없을 수도 있음
+
+        null}
+      </Column>
     </Wrapper>
   );
 }
