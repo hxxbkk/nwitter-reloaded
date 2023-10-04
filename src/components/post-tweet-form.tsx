@@ -104,10 +104,7 @@ export default function PostTweetFrom() {
         userId: user.uid,
       }); // 처음은 어떤 컬렉션에 도큐먼트를 생성하고 싶은지
       if (file) {
-        const locationRef = ref(
-          storage,
-          `tweets/${user.uid}-${user.displayName}/${doc.id}`
-        ); //tweets 폴더 안에 트윗을 보내는 유저들 저마다의 폴더를 하나씩 생성
+        const locationRef = ref(storage, `tweets/${user.uid}/${doc.id}`); //tweets 폴더 안에 트윗을 보내는 유저들 저마다의 폴더를 하나씩 생성
         // tweets폴더가 있고 그 안에 유저 ID - 유저 이름으로 생서됨
         const result = await uploadBytes(locationRef, file);
         const url = await getDownloadURL(result.ref); // 파일을 업로드하고 그 파일의 퍼블릭 URL 받기
