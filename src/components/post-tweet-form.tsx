@@ -5,7 +5,7 @@ import { auth, db, storage } from '../firebase';
 import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
 
 const Form = styled.form`
-  //div로 해뒀어서 onSumbit 작동이 안됐었음
+  // div로 해뒀어서 onSumbit 작동이 안됐었음
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -68,7 +68,7 @@ export default function PostTweetFrom() {
     setTweet(e.target.value);
   };
 
-  //타입이 file인 input이 변경될 때맏 ㅏ파일의 배열을 받게 됨, 어떤 input은 복수의 파일을 업로드하게 해 줌
+  //타입이 file인 input이 변경될 때마다 파일의 배열을 받게 됨, 어떤 input은 복수의 파일을 업로드하게 해 줌
   const onFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { files } = e.target;
     if (files && files.length === 1) {
