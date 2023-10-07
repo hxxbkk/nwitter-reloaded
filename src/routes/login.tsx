@@ -21,7 +21,7 @@ export default function CreateAccount() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
-  const onChange = (e: React.ChangeEvent<HTMLInputElment>) => {
+  const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const {
       target: { name, value },
     } = e;
@@ -37,7 +37,7 @@ export default function CreateAccount() {
     if (isLoading || email === '' || password === '') return;
     try {
       setLoading(true);
-      
+
       //계정 생성을 간단히 할 수 있음
       // ↓ 이 함수에 필요한 건 firebase 파일에서 온 Auth 인스턴스, 이메일, 비밀번호
       await signInWithEmailAndPassword(auth, email, password);
